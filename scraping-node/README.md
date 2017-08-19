@@ -21,3 +21,7 @@ O script sh obtem dados de 100 páginas de todos estados brasileiros e salva os 
 * `number`: Número de páginas a ser obtidas. Ex: `number=50`
 * `filename`: Nome do arquivo onde os dados serão salvos em formato json. Ex: `filename=/tmp/dados_do_es.json`
 * `state`: O estado brasileiro o qual os dados serão obtidos. CUIDADO: Este parâmtro deverá conter apenas a sigla, pois compõe a rota de requisição. Ex: `state=sp`
+
+## Exemplo de uso
+
+`$ node index number=50 state=es filename=~/imoveis_olx_es.json`
