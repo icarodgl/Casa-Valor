@@ -103,12 +103,16 @@ monitor = {
   }
 }
 
+function fix2decimals(n, fixed = 2) {
+  return parseFloat(Math.round(n * 100) / 100).toFixed(fixed)
+}
+
 function monitorStart(i = 0) {
   if (monitor._keep) {
     if (i > 2) { i = -1 }
     monitor._clear()
     process.stdout.write(
-      `${parseFloat(Math.round(progress * 100) / 100).toFixed(0)}%  | Estado: ${monitor.state.toUpperCase()} | Obtendo dados${new Array(i+1).fill('.').join('')}`
+      `${fix2decimals(progress, 0)}%  | Estado: ${monitor.state.toUpperCase()} | Memória utilizada: ${fix2decimals(process.memoryUsage().rss / 1024 / 1024)} Mb | Obtendo dados${new Array(i+1).fill('.').join('')}`
     )
     return setTimeout(() => monitorStart(++i), 200)
   }
