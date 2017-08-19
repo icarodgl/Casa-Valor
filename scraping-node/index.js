@@ -167,7 +167,7 @@ function main(_args = process.argv) {
   fillDados(args.number, args.state)
     .then(() => {
       monitor.end()
-      const filename = args.filename || 'dados.json'
+      const filename = args.filename || `dados/dados_${args.state}.json`
       fs.writeFileSync(filename, JSON.stringify(dados), err => { throw err })
       setTimeout(() => log.success(`Dados gerados com sucesso no arquivo ${filename}!`), 200)
     })
