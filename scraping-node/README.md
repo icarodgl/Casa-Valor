@@ -2,7 +2,7 @@
 
 ## Dados
 
-Os dados são obtidos através do endpoint http://<estado>.olx.com.br/imoveis?o=<pagina> e salvos em um arquivo para cada estado na pasta [dados](dados), caso não seja definido um local específico.
+Os dados são obtidos através do endpoint http://`<estado>`.olx.com.br/imoveis?o=`<pagina>` e salvos em um arquivo para cada estado na pasta [dados](dados), caso não seja definido um local específico.
 
 ## Requisitos
 
