@@ -1,13 +1,14 @@
+// Import de libs
 const rp = require('request-promise')
 const cheerio = require('cheerio')
 const _ = require('lodash')
 const fs = require('fs')
 const iconv = require('iconv-lite')
 const log = require('pretty-log')
+// -- fim import libs
 
-let dados = []
-
-let progress = 0
+let dados = [] // dados tratados vindo do site
+let progress = 0 // progresso atual da obtenção de dados
 
 /**
  * Get default request promise options for scraping
@@ -38,7 +39,13 @@ function tratamentoRegiao(el) {
   return el.trim().split('-').map(a => a.trim()).filter(b => b.length)
 }
 
-
+/**
+ * Preencher array com dados minerados do site
+ * 
+ * @param {number} [number=1] 
+ * @param {string} [state='es'] 
+ * @returns 
+ */
 function fillDados(number = 1, state = 'es') {
 
   return new Promise((resolve, reject) => {
@@ -47,6 +54,13 @@ function fillDados(number = 1, state = 'es') {
     )
   })
 
+  /**
+   * Função interna para recursão
+   * 
+   * @param {number} [index=1] 
+   * @param {string} [estado='es'] 
+   * @returns 
+   */
   function _fillDados(index = 1, estado = 'es') {
     let options = getOptionsOLX(index, estado)
     return rp(options)
@@ -89,6 +103,10 @@ function fillDados(number = 1, state = 'es') {
 
 }
 
+/**
+ * Monitor de atividade
+ * para informar o progresso atual, memória usada, etc...
+ */
 monitor = {
   _keep: true,
   _clear: () => {
@@ -103,10 +121,23 @@ monitor = {
   }
 }
 
+/**
+ * Fixar casas decimais dado
+ * 
+ * @param {any} n 
+ * @param {number} [fixed=2] 
+ * @returns 
+ */
 function fix2decimals(n, fixed = 2) {
   return parseFloat(Math.round(n * 100) / 100).toFixed(fixed)
 }
 
+/**
+ * Iniciar o log do monitor de atividade
+ * 
+ * @param {number} [i=0] 
+ * @returns 
+ */
 function monitorStart(i = 0) {
   if (monitor._keep) {
     if (i > 2) { i = -1 }
@@ -118,6 +149,11 @@ function monitorStart(i = 0) {
   }
 }
 
+/**
+ * Main
+ * 
+ * @param {any} [_args=process.argv] 
+ */
 function main(_args = process.argv) {
   args = {}
   _args.forEach(arg => { 
@@ -142,4 +178,4 @@ function main(_args = process.argv) {
 
 }
 
-main()
+main() // Iniciando a aplicação
