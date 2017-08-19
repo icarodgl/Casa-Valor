@@ -13,7 +13,8 @@ Os dados são obtidos através do endpoint http://`<estado>`.olx.com.br/imoveis?
 
 1. Instale as dependências: `$ npm install`
 2. Execute o index.js: `$ node index`
-  * O script sh obtem dados de 100 páginas de todos estados brasileiros e salva os arquivos json na pasta dados: `sh gerar-dados.sh`
+
+O script sh obtem dados de 100 páginas de todos estados brasileiros e salva os arquivos json na pasta dados: `$ sh gerar-dados.sh`
 
 ## Parâmetros
 
