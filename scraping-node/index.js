@@ -161,7 +161,7 @@ function main(_args = process.argv) {
     args[a[0]] = a.length === 2 ? a[1] : a[0]
   })
 
-  monitor.state = args.state
+  monitor.state = args.state || 'es'
   monitor.start()
 
   fillDados(args.number, args.state)
