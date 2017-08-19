@@ -88,7 +88,7 @@ function fillDados(number = 1, state = 'es') {
           detalhes.forEach(detalhe => {
             let m2 = detalhe.indexOf(' m²')
             if (m2 !== -1) {
-              area = detalhe.slice(0, m2)
+              area = Number(detalhe.slice(0, m2))
             }
           })
 
