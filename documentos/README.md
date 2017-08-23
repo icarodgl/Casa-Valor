@@ -1,5 +1,6 @@
 # SQL
 
+´´´sql
 CREATE TABLE Pais (
     id serial PRIMARY KEY,
     nome char(3)
@@ -55,3 +56,4 @@ ALTER TABLE Cat_imo ADD CONSTRAINT FK_Cat_imo_0
 ALTER TABLE Cat_imo ADD CONSTRAINT FK_Cat_imo_1
     FOREIGN KEY (FK_Imovel_id)
     REFERENCES Imovel (id);
+```
