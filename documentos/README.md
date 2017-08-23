@@ -1,6 +1,8 @@
 # SQL
 
-´´´sql
+
+```sql
+
 CREATE TABLE Pais (
     id serial PRIMARY KEY,
     nome char(3)
