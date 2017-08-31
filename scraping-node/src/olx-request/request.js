@@ -46,7 +46,7 @@ function _fillDados(index = 1, estado, number = 1, dados = []) {
   return rp(options)
     .then($ => {
 
-      monitor.progress += (1 / (totalStates * number)) * 100
+      monitor.tick((1 / (totalStates * number)) * 100)
 
       const list = $('div.section_OLXad-list')
       list.find('li.item').filter(function (i, el) {

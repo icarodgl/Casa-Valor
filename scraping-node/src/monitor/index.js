@@ -1,4 +1,5 @@
 const log = require('pretty-log')
+const ProgressBar = require('ascii-progress')
 
 let i = 0
 
@@ -15,6 +16,7 @@ class Monitor {
     this._progress = null
     this._started = false
     this._keep = false
+    this._bar = null
   }
 
   /**
@@ -40,19 +42,12 @@ class Monitor {
     if (this._started) { return }
     this._started = true
     this._keep = true
-    
-    return keep.apply(this)
-
-    function keep() {
-      if (this._keep) {
-        if (i > 2) { i = 0 }
-        this._clear.apply(this)
-        process.stdout.write(
-          `${fix2decimals(this.progress || 0)}% | Memória utilizada: ${fix2decimals(process.memoryUsage().rss / 1024 / 1024)} Mb ${new Array(++i).fill('.').join('')}`
-        )
-        return setTimeout(() => keep.apply(this), 200)
-      }
-    }
+    this._bar = new ProgressBar({
+      schema: ':percent (.white.bold:bar.brightGreen).white.bold | .white Memória utilizada\: :mem Mb .red | .white Tempo decorrido\: :elapsed .yellow',
+      total: 100,
+      blank: '░',
+      clear: true
+    })
 
   }
 
@@ -65,6 +60,12 @@ class Monitor {
     if (!this._keep) { return }
     this._clear()
     this._keep = false
+  }
+
+  tick(delta) {
+    this._bar.tick(delta, {
+      mem: fix2decimals(process.memoryUsage().rss / 1024 / 1024).toString()
+    })
   }
 
   /**
