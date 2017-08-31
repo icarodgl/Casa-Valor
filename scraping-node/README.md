@@ -36,6 +36,6 @@ O script sh obtem dados de 100 páginas de todos estados brasileiros e salva os 
 
 ## Exemplo de uso
 
-1- Com node: `$ node src/main --filename ~/Downloads/dados_es.json -s es -p 20 -m`
-2- Com npm: `$ npm start -- -f ./sudeste.json -s es rj mg sp -p 10 -m`
-3- Com o arquivo sh: `$ sh gerar-dados.sh` **Obs: Será obtido 100 páginas de todos os estados brasileiros e salvo no banco de dados postgres local ou configurado com variáveis de ambiente**
+1. Com node: `$ node src/main --filename ~/Downloads/dados_es.json -s es -p 20 -m`
+2. Com npm: `$ npm start -- -f ./sudeste.json -s es rj mg sp -p 10 -m`
+3. Com o arquivo sh: `$ sh gerar-dados.sh` **Obs: Será obtido 100 páginas de todos os estados brasileiros e salvo no banco de dados postgres local ou configurado com variáveis de ambiente**
