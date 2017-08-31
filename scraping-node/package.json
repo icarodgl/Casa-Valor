@@ -2,13 +2,18 @@
   "name": "scraping-node",
   "version": "1.0.0",
   "private": true,
-  "main": "index.js",
+  "scripts": {
+    "start": "node src/main"
+  },
+  "main": "src/main.js",
   "author": "David Vilaça <vilacapdavid@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "argparse": "^1.0.9",
     "cheerio": "^1.0.0-rc.2",
     "iconv-lite": "^0.4.18",
     "lodash": "^4.17.4",
+    "pg": "^7.2.0",
     "pretty-log": "^0.1.0",
     "request": "^2.81.0",
     "request-promise": "^4.2.1"
