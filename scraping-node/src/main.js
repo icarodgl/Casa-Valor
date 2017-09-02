@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const { writeFile } = require('fs')
+const ProgressBar = require('ascii-progress')
 const olxRequest = require('./olx-request')
 const { insert } = require('./database')
 const args = require('./args')
@@ -7,12 +8,10 @@ const monitor = require('./monitor').getInstance()
 
 function main() {
 
-  if (args.monitor) { monitor.start() }
+  monitor.start('Getting data from the server.white :percent (.white.bold:bar.brightGreen).white.bold | .white Memória utilizada\: :mem Mb .red', 100)
 
   olxRequest(args.pages, args.states).then(data => {
-
-    monitor.end()
-
+    monitor.clearProgressBar()
     if (args.postgres) {
       insert(data).then(() => {
         monitor.success(`Data entered in the database successfully!`)

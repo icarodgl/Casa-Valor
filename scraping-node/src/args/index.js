@@ -1,7 +1,8 @@
 const { ArgumentParser } = require('argparse')
 const _ = require('lodash')
 const allStates = require('../all-states.json')
-const monitor = require('../monitor').getInstance()
+const Monitor = require('../monitor')
+const monitor = Monitor.getInstance()
 const parser = new ArgumentParser({
   version: '0.0.1',
   addHelp: true,
@@ -73,5 +74,7 @@ if (!args.postgres && !args.filename) {
   parser.printHelp()
   parser.exit(1)
 }
+
+Monitor.monitor = args.monitor
 
 module.exports = args

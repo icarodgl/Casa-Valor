@@ -2,6 +2,7 @@ const log = require('pretty-log')
 const ProgressBar = require('ascii-progress')
 
 let i = 0
+let _monitor = true
 
 /**
  * Monitoring
@@ -13,9 +14,6 @@ class Monitor {
 
   Monitor() {
     this._instance = null
-    this._progress = null
-    this._started = false
-    this._keep = false
     this._bar = null
   }
 
@@ -32,40 +30,48 @@ class Monitor {
     return this._instance
   }
 
+  static get monitor() { return _monitor }
+  static set monitor(monitor) { _monitor = monitor }
+
   /**
    * Start log monitor
+   * 
+   * @param {string} schema 
+   * @param {number} [total=100] 
+   * @memberof Monitor
+   */
+  start(schema, total = 100) {
+    if (!Monitor.monitor) { return }
+    if (!schema) { throw new Error('Invalid progress bar') }
+    this._bar = new ProgressBar({
+      schema: schema,
+      total: total,
+      blank: '░',
+      clear: false
+    })
+  }
+
+  /**
+   * Update progress bar
+   * 
+   * @param {number} delta 
+   * @param {any} args 
+   * @memberof Monitor
+   */
+  tick(delta, args) {
+    if (!Monitor.monitor) { return }
+    this._bar.tick(delta, args)
+  }
+
+  /**
+   * Clear progress bar
    * 
    * @returns 
    * @memberof Monitor
    */
-  start() {
-    if (this._started) { return }
-    this._started = true
-    this._keep = true
-    this._bar = new ProgressBar({
-      schema: ':percent (.white.bold:bar.brightGreen).white.bold | .white Memória utilizada\: :mem Mb .red | .white Tempo decorrido\: :elapsed .yellow',
-      total: 100,
-      blank: '░',
-      clear: true
-    })
-
-  }
-
-  /**
-   * End log monitor
-   * 
-   * @memberof Monitor
-   */
-  end() {
-    if (!this._keep) { return }
-    this._clear()
-    this._keep = false
-  }
-
-  tick(delta) {
-    this._bar.tick(delta, {
-      mem: fix2decimals(process.memoryUsage().rss / 1024 / 1024).toString()
-    })
+  clearProgressBar() {
+    if (!Monitor.monitor) { return }
+    return this._bar.clear()
   }
 
   /**
@@ -88,47 +94,6 @@ class Monitor {
     return log.error(...arguments)
   }
 
-  /**
-   * Progress string get
-   * 
-   * @memberof Monitor
-   */
-  get progress() {
-    return this._progress
-  }
-
-  /**
-   * Progress string set
-   * 
-   * @memberof Monitor
-   */
-  set progress(num) {
-    if (typeof num !== 'number') { throw new Error('Set progress error: The type must be number') }
-    this._progress = num
-  }
-
-  /**
-   * Clear console
-   * 
-   * @private
-   * @memberof Monitor
-   */
-  _clear() {
-    process.stdout.clearLine();  // clear current text
-    process.stdout.cursorTo(0);  // move cursor to beginning of line
-  }
-
-}
-
-/**
- * Fix decimals
- * 
- * @param {any} n 
- * @param {number} [fixed=2] 
- * @returns 
- */
-function fix2decimals(n, fixed = 2) {
-  return parseFloat(Math.round(n * 100) / 100).toFixed(fixed)
 }
 
 module.exports = Monitor

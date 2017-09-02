@@ -19,7 +19,6 @@ module.exports = function getDados(number = 1, states = ['es']) {
     throw new Error('Erro no parâmetro "states"!')
   }
   totalStates = states.length
-  monitor.progress = 0
 
   return new Promise(resolve => {
     let all = []
@@ -46,13 +45,15 @@ function _fillDados(index = 1, estado, number = 1, dados = []) {
   return rp(options)
     .then($ => {
 
-      monitor.tick((1 / (totalStates * number)) * 100)
+      monitor.tick((1 / (totalStates * number)) * 100, {
+        mem: fix2decimals(process.memoryUsage().rss / 1024 / 1024).toString()
+      })
 
       const list = $('div.section_OLXad-list')
       list.find('li.item').filter(function (i, el) {
         el = $(el)
         return el.attr('class') === 'item'
-      }).each(async function (i, item) {
+      }).each(function (i, item) {
         item = $(item)
         const data = new Date().toJSON().split('T')[0]
         const id = Number(item.find('a.OLXad-list-link').attr('id'))
@@ -91,4 +92,15 @@ function _fillDados(index = 1, estado, number = 1, dados = []) {
  */
 function tratamentoRegiao(el) {
   return el.trim().split('-').map(a => a.trim()).filter(b => b.length)
+}
+
+/**
+ * Fix decimals
+ * 
+ * @param {any} n 
+ * @param {number} [fixed=2] 
+ * @returns 
+ */
+function fix2decimals(n, fixed = 2) {
+  return parseFloat(Math.round(n * 100) / 100).toFixed(fixed)
 }
