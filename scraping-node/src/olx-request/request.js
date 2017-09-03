@@ -22,9 +22,9 @@ module.exports = function getDados(number = 1, states = ['es']) {
 
   return new Promise(resolve => {
     let all = []
-    states.forEach(state => all.push(_fillDados(1, state, number)))
+    states.forEach(state => all.push(_fillDados(1, state, number).catch(handleError)))
     resolve(
-      Promise.all(all).then(res => _.union(...res))
+      Promise.all(all).catch(handleError).then(res => _.union(...res))
     )
   })
 
@@ -43,6 +43,7 @@ module.exports = function getDados(number = 1, states = ['es']) {
 function _fillDados(index = 1, estado, number = 1, dados = []) {
   let options = getOptionsOLX(index, estado)
   return rp(options)
+    .catch(handleError)
     .then($ => {
 
       monitor.tick((1 / (totalStates * number)) * 100, {
@@ -80,7 +81,7 @@ function _fillDados(index = 1, estado, number = 1, dados = []) {
         }
         dados.push(dado)
       })
-      return index < number ? _fillDados(++index, estado, number, dados) : Promise.resolve(dados)
+      return index < number ? _fillDados(++index, estado, number, dados).catch(handleError) : Promise.resolve(dados)
     })
 }
 
@@ -103,4 +104,16 @@ function tratamentoRegiao(el) {
  */
 function fix2decimals(n, fixed = 2) {
   return parseFloat(Math.round(n * 100) / 100).toFixed(fixed)
+}
+
+/**
+ * Handle error
+ * 
+ * @param {any} err 
+ * @returns 
+ */
+function handleError(err) {
+  if (err) {
+    return Promise.reject(err)
+  }
 }

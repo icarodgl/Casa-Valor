@@ -8,7 +8,7 @@ const monitor = require('../monitor').getInstance()
 let pgDataPromise
 client.connect(err => {
   if (err) { return handleError(err) }
-  pgDataPromise = getPgData()
+  pgDataPromise = getPgData().catch(handleError)
 })
 
 /**
@@ -17,25 +17,28 @@ client.connect(err => {
  * @param {Array<any>} dataArr 
  * @returns {Promise<void>}
  */
-function insertData(dataArr) {
+async function insertData(dataArr) {
+
+  let pgData = (await pgDataPromise.catch(handleError))
 
   monitor.clearProgressBar()
   monitor.start('Saving to database (.white.bold:bar.brightBlue).white.bold :percent', 100)
   const TICK_DELTA = (1 / dataArr.length) * 100
 
-  return new Promise(async resolve => {
+  return new Promise(resolve => {
 
-    let pgData = await pgDataPromise.catch(handleError)
     let i = 0
+    let error
 
-    dataArr.forEach(async data => {
+    dataArr.forEach(d => (async data => {
+
       Object.keys(data).forEach(key => {
         if (typeof data[key] === 'string') { data[key] = data[key].replace('\'', '\'\'') }
       })
 
       let categoriaBanco = _.find(pgData.categoria, cat => cat.nome === data.categoria && data.tipo === data.tipo)
       if (!categoriaBanco) {
-        categoriaBanco = (await insertAndReturn('categoria', ['nome', 'tipo'], [`'${data.categoria}'`, `'${data.tipo}'`]))
+        categoriaBanco = (await insertAndReturn('categoria', ['nome', 'tipo'], [`'${data.categoria}'`, `'${data.tipo}'`]).catch(handleError))
         pgData.categoria.push(categoriaBanco)
       }
 
@@ -47,28 +50,31 @@ function insertData(dataArr) {
 
       let estadoBanco = _.find(pgData.estado, est => est.nome === data.estado)
       if (!estadoBanco) {
-        estadoBanco = (await insertAndReturn('estado', ['nome', 'fk_pais_id'], [`'${data.estado}'`, `${paisBanco.id}`]))
+        estadoBanco = (await insertAndReturn('estado', ['nome', 'fk_pais_id'], [`'${data.estado}'`, `${paisBanco.id}`]).catch(handleError))
         pgData.estado.push(estadoBanco)
       }
 
       let cidadeBanco = _.find(pgData.cidade, cid => cid.nome === data.cidade)
       if (!cidadeBanco) {
-        cidadeBanco = (await insertAndReturn('cidade', ['nome', 'fk_estado_id'], [`'${data.cidade}'`, `${estadoBanco.id}`]))
+        cidadeBanco = (await insertAndReturn('cidade', ['nome', 'fk_estado_id'], [`'${data.cidade}'`, `${estadoBanco.id}`]).catch(handleError))
         pgData.cidade.push(cidadeBanco)
       }
 
-      let imovelResult = (await client.query(`INSERT INTO imovel (id, preco, area, data, fk_cidade_id) SELECT ${data.id},${data.preco},${data.area},'${data.data}',${cidadeBanco.id} WHERE NOT EXISTS (SELECT * FROM imovel WHERE imovel.id=${data.id}) RETURNING *;`))
+      let imovelResult = (await client.query(`INSERT INTO imovel (id, preco, area, data, fk_cidade_id) SELECT ${data.id},${data.preco},${data.area},'${data.data}',${cidadeBanco.id} WHERE NOT EXISTS (SELECT * FROM imovel WHERE imovel.id=${data.id}) RETURNING *;`).catch(handleError))
 
       if (imovelResult.rows.length) {
         let imovel = imovelResult.rows[0]
-        ; (await client.query(`INSERT INTO cat_imo (fk_categoria_id, fk_imovel_id) VALUES (${categoriaBanco.id},${imovel.id});`))
+          ; (await client.query(`INSERT INTO cat_imo (fk_categoria_id, fk_imovel_id) VALUES (${categoriaBanco.id},${imovel.id});`).catch(handleError))
       }
 
       i++
       monitor.tick(TICK_DELTA)
-    })
+    })(d).catch(err => { error = err ? err : error }))
 
     let intervalId = setInterval(() => {
+      if (error) {
+        resolve(handleError(error))
+      }
       if (i === dataArr.length) {
         clearInterval(intervalId)
         resolve()
@@ -99,10 +105,11 @@ function insertAndReturn(table, fields, values) {
     .then(res => {
       let rows = res.rows
       if (!rows || !rows.length) {
-        return query(`SELECT * FROM ${table} WHERE ${where};`).then(r => r.rows[0])
+        return query(`SELECT * FROM ${table} WHERE ${where};`).then(r => r.rows[0]).catch(handleError)
       }
       return rows[0]
     })
+    .catch(handleError)
 }
 
 /**
@@ -114,10 +121,11 @@ function insertAndReturn(table, fields, values) {
 function query(query) {
   if (!query) { throw new Error('No query') }
   return new Promise(resolve => {
+    let error
     sem.take(async () => {
-      let result = (await client.query(query))
+      let result = (await client.query(query).catch(err => error = err ? err : error))
       sem.leave()
-      resolve(result)
+      error ? resolve(handleError(error)) : resolve(result)
     })
   })
 }
@@ -129,17 +137,23 @@ function query(query) {
  */
 async function getPgData() {
   data = {
-    categoria: (await client.query('SELECT * FROM categoria;')).rows,
-    cidade: (await client.query('SELECT * FROM cidade;')).rows,
-    estado: (await client.query('SELECT * FROM estado;')).rows,
-    pais: (await client.query('SELECT * FROM pais;')).rows
+    categoria: (await client.query('SELECT * FROM categoria;').catch(handleError)).rows,
+    cidade: (await client.query('SELECT * FROM cidade;').catch(handleError)).rows,
+    estado: (await client.query('SELECT * FROM estado;').catch(handleError)).rows,
+    pais: (await client.query('SELECT * FROM pais;').catch(handleError)).rows
   }
   return data
 }
 
+/**
+ * Handle error
+ * 
+ * @param {any} err 
+ * @returns 
+ */
 function handleError(err) {
   if (err) {
-    throw err
+    return Promise.reject(err)
   }
 }
 
